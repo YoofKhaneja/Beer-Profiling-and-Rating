@@ -35,7 +35,7 @@ The Beer Profile and Ratings dataset from Kaggle was used for the project. The m
 •	review_overall \
 •	number_of_reviews \
 \
-The data columns are a mix of both character and numeric types/
+The data columns are a mix of both character and numeric types.
 
 ________________________________________
 
@@ -46,10 +46,10 @@ The main objectives we hope to accomplish with this project are as follows: \
 •	Find the if there are any parameters that are more important than the others \
 •	Find the relationship between the profile parameters \
 •	Identify the most/least popular styles of beer \
-\
+\\
 As a consumer, knowing what each beer feels like and what other people think about it would make one make better decisions while choosing a drink, or make it easier to explore new options.
-\
+\\
 As a manufacturer, knowing what the people prefer and what they are talking about the most would help produce better, more desirable products for the market.
-\
-Even though this is just a small example, the concepts used here can be used (and improved upon) to do real-world analysis on much larger data as well.
+\\
+Even though this is just a small example, the concepts used here can be used (and improved upon) to do real-world analysis on much larger data as well. \
 ________________________________________
