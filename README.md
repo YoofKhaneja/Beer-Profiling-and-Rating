@@ -1,10 +1,9 @@
 # Beer-Profiling-and-Rating
-Beer Profile and Ratings Analysis
-
+/
 1. About the Data:
 
-The Beer Profile and Ratings dataset from Kaggle was used for the project. The main data set (beer_profile_and_ratings.csv) contains the following columns:
-(General)
+The Beer Profile and Ratings dataset from Kaggle was used for the project. The main data set (beer_profile_and_ratings.csv) contains the following columns: /
+(General) /
 •	Name: Beer name (label)
 •	Style: Beer Style
 •	Brewery: Brewery name
