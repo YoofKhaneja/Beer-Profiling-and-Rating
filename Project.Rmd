@@ -1,0 +1,261 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+```{r}
+library(dplyr)
+library(tidyverse)
+library(broom)
+library(ggplot2)
+library(reshape2)
+library(gridExtra)
+library(ggcorrplot)
+library(vcd)
+library(ade4)
+library(ggbiplot)
+```
+
+```{r}
+beers <- read.csv("beer_profile_and_ratings.csv")
+beers
+```
+
+```{r}
+summary(beers)
+```
+
+```{r}
+colSums(is.na(beers))
+```
+
+```{r}
+bs <- read.csv("beer_styles.csv")
+bs
+```
+
+```{r, fig.height = 6, fig.width = 12}
+ggplot(data = bs) +
+  geom_point(aes(x = Style, y = Average.of.review_aroma, color = 'red'),  size = 4, alpha = 0.4) +
+  geom_point(aes(x = Style, y = Average.of.review_appearance, color = 'blue'), size = 5, alpha = 0.4) +
+  geom_point(aes(x = Style, y = Average.of.review_palate, color = 'green'), size = 6, alpha = 0.4) +
+  geom_point(aes(x = Style, y = Average.of.review_taste, color = 'purple'), size = 7, alpha = 0.4) +
+  geom_point(aes(x = Style, y = Average.of.review_overall, color = 'gray'), size = 8, alpha = 0.4) +
+  scale_color_discrete(name = "Metric", labels = c("Aroma", "Appearance", "Palate", "Taste", "Overall")) +
+  xlab('Beer Styles') +
+  ylab('Average Scores') +
+  theme_bw() +
+  theme(axis.text.x = element_text(angle=90, hjust=1))
+```
+
+```{r}
+br <- read.csv("reviews.csv")
+br
+```
+
+```{r, fig.height = 6, fig.width = 12}
+ggplot(data = br) +
+  geom_col(aes(x = Style, y = number_of_reviews), fill = 'orange', alpha = 0.8) +
+  xlab('Beer Styles') +
+  ylab('Number of Reviews') +
+  theme_bw() +
+  theme(axis.text.x = element_text(angle=90, hjust=1))
+```
+
+```{r}
+beers_num <- subset(beers, select = c(ABV, Min.IBU, Max.IBU, Astringency, Body, Alcohol, Bitter, Sweet, Sour, Salty, Fruits, Hoppy, Spices, Malty))
+beers_num
+```
+
+```{r}
+beers_num_long <- melt(beers_num)
+```
+
+```{r, fig.width = 10}
+ggplot(data = beers_num_long, aes(x = variable, y = value)) +
+  geom_boxplot(aes(fill = variable, alpha = 0.6)) +
+  theme_bw() +
+  theme(legend.position = "none", plot.title = element_text(hjust = 0.5))
+```
+
+```{r}
+ggplot(data = beers) +
+  geom_density(aes(x = review_aroma, color = 'coral'), alpha = 0.7, size = 1) +
+  geom_density(aes(x = review_appearance, color = 'lightblue'), alpha = 0.6, size = 1) +
+  geom_density(aes(x = review_palate, color = 'lightgreen'), alpha = 0.5, size = 1) +
+  geom_density(aes(x = review_taste, color = 'maroon'), alpha = 0.4, size = 1) +
+  geom_density(aes(x = review_overall, color = 'brown'), alpha = 0.3, size = 1) +
+  scale_color_discrete(name = "Metric", labels = c("Aroma", "Appearance", "Palate", "Taste", "Overall")) +
+  xlab('Reviews') +
+  ylab('Density') +
+  theme_bw()
+```
+
+```{r}
+ggplot(data = beers) +
+  geom_smooth(aes(x = review_aroma,y= review_overall, color = 'coral'), se = FALSE, alpha = 0.1) +
+  geom_smooth(aes(x = review_palate,y= review_overall, color = 'red'), se = FALSE, alpha = 0.1) +
+  geom_smooth(aes(x = review_taste,y= review_overall, color = 'blue'), se = FALSE, alpha = 0.1) +
+  geom_smooth(aes(x = review_appearance,y= review_overall, color = 'black'), se = FALSE, alpha = 0.1) +
+  scale_color_discrete(name = "Metric", labels = c("Aroma", "Appearance", "Palate", "Taste")) +
+  xlab('Other Reviews') +
+  ylab('Overall Review') +
+  theme_bw()
+```
+
+```{r}
+ggplot(data = beers) +
+  stat_ecdf(aes(x = review_aroma, color = 'coral')) +
+  stat_ecdf(aes(x = review_appearance, color = 'lightblue')) +
+  stat_ecdf(aes(x = review_palate, color = 'lightgreen')) +
+  stat_ecdf(aes(x = review_taste, color = 'maroon')) +
+  stat_ecdf(aes(x = review_overall, color = 'brown')) +
+  scale_color_discrete(name = "Variable", labels = c("Aroma", "Palate", "Taste", "Appearance", "Overall")) +
+  xlab('Reviews') +
+  ylab('Density') +
+  theme_bw()
+```
+
+```{r}
+corr_data = subset(beers, select = c(6:24))
+corr <- round(cor(corr_data), 2)
+```
+
+```{r, fig.height = 7, fig.width = 12}
+ggcorrplot(corr, type = 'upper', method = 'circle', colors = c("#6495ED", "#FFFFFF", "#FFA07A"))
+```
+
+```{r, fig.height = 2, fig.width = 10}
+ggplot(data = beers) +
+  geom_point(aes(x = log(Body), y = Astringency, color = review_overall), alpha = 0.5) +
+  facet_grid( ~ cut(Alcohol, breaks = 4)) +
+  scale_color_gradientn(colors = c("#F26744", "#ADE330", "#58ED98", "#95ADF5", "#F595CF")) +
+  theme_bw()
+```
+
+```{r, fig.height = 7, fig.width = 10}
+ggplot(data = beers) +
+  geom_point(aes(x = log(Sweet), y = Bitter, color = review_overall), alpha = 0.5) +
+  facet_grid(cut(Sour, breaks = 4) ~ cut(Alcohol, breaks = 4)) +
+  scale_color_gradientn(colors = c("#F26744", "#ADE330", "#58ED98", "#95ADF5", "#F595CF")) +
+  theme_bw()
+```
+
+```{r, fig.height = 7, fig.width = 10}
+ggplot(data = beers) +
+  geom_point(aes(x = log(Fruits), y = Hoppy, color = review_overall), alpha = 0.5) +
+  facet_grid(cut(Spices, breaks = 4) ~ cut(Malty, breaks = 4)) +
+  scale_color_gradientn(colors = c("#F26744", "#ADE330", "#58ED98", "#95ADF5", "#F595CF")) +
+  theme_bw()
+```
+
+```{r}
+beer_lm_base <- lm(formula = review_overall ~ Min.IBU * Max.IBU * Body * Bitter * Sweet * Sour * Fruits * Hoppy * Malty , data = beers)
+lm_preds <- augment(beer_lm_base, type.predict = "response")
+ggplot(data = lm_preds, aes(x = beers$review_overall, y = .resid)) +
+  geom_point(aes(color = .fitted), alpha = 0.4) +
+  scale_color_gradientn(colors = c("#F26744", "#ADE330", "#58ED98", "#95ADF5", "#F595CF")) +
+  labs(title = "Residual Plots for Linear Model with Actual Parameters")+
+  theme_bw()
+```
+
+```{r}
+pca_data <- subset(corr_data, select = c(1:14))
+pca_data
+```
+
+```{r}
+beers_scale = prcomp(pca_data, scale. = TRUE)
+ggbiplot(beers_scale, groups = beers$review_overall, var.axes = TRUE, alpha = 0.4) +
+  scale_color_gradientn(colors = c("#F26744", "#ADE330", "#58ED98", "#95ADF5", "#F595CF")) +
+  theme_bw()
+```
+
+```{r}
+beer_loadings = data.frame(beers_scale$rotation)[1:4]
+beer_pc = data.frame(beers_scale$x[,0:4], beers$review_overall)
+beer_pc
+```
+
+```{r, fig.height = 8, fig.width = 12}
+ggplot(data = beer_pc, aes(x = PC1, y = PC2)) +
+  geom_point(aes(color = beers.review_overall), alpha = 0.4) +
+  facet_grid(cut(PC3, breaks = 4) ~ cut(PC4, breaks = 4)) +
+  scale_color_gradientn(colors = c("#F26744", "#ADE330", "#58ED98", "#95ADF5", "#F595CF")) +
+  theme_bw()
+```
+
+```{r}
+beer_lm <- lm(formula = beers.review_overall ~ PC1 * PC2 * PC3 * PC4, data = beer_pc)
+beer_lm
+```
+
+```{r}
+beer_loess <- loess(formula = beers.review_overall ~ PC1 * PC2 * PC3 * PC4, data = beer_pc, degree = 2, span = 1, family = "symmetric", normalize = TRUE)
+beer_loess
+```
+
+```{r}
+beer_vals <- data.frame(
+  expand.grid(
+    PC1 = runif(10, min = -118.9999, max = 216.5028),
+    PC2 = runif(10, min = -225.2387, max = 80.41939),
+    PC3 = runif(10, min = -141.4299, max = 111.0616),
+    PC4 = runif(10, min = -91.86107, max = 124.6238)
+  )
+)
+beer_predlm <- as.data.frame(augment(beer_lm, newdata = beer_vals))
+beer_predloess <- as.data.frame(augment(beer_loess, newdata = beer_vals))
+```
+
+```{r}
+lm_preds <- augment(beer_lm, type.predict = "response")
+lm_preds
+```
+
+```{r}
+loess_preds <- augment(beer_loess, type.predict = "response")
+loess_preds
+```
+
+```{r}
+ggplot(data = lm_preds, aes(x = beers.review_overall, y = .resid)) +
+  geom_point(aes(color = .fitted), alpha = 0.4) +
+  scale_color_gradientn(colors = c("#F26744", "#ADE330", "#58ED98", "#95ADF5", "#F595CF")) +
+  theme_bw()
+```
+
+```{r}
+ggplot(data = lm_preds, aes(x = log(beers.review_overall), y = log(.fitted))) +
+  geom_point(aes(color = .resid), alpha = 0.4) +
+  scale_color_gradientn(colors = c("#F26744", "#ADE330", "#58ED98", "#95ADF5", "#F595CF")) +
+  theme_bw()
+```
+
+```{r}
+ggplot(data = lm_preds, aes(x = .fitted, y = .resid)) +
+  geom_point(aes(color = beers.review_overall), alpha = 0.4) +
+  scale_color_gradientn(colors = c("#F26744", "#ADE330", "#58ED98", "#95ADF5", "#F595CF")) +
+  theme_bw()
+```
+
+```{r}
+ggplot(data = loess_preds, aes(x = beers.review_overall, y = .resid)) +
+  geom_point(aes(color = .fitted), alpha = 0.4) +
+  scale_color_gradientn(colors = c("#F26744", "#ADE330", "#58ED98", "#95ADF5", "#F595CF")) +
+  theme_bw()
+```
+
+```{r}
+ggplot(data = loess_preds, aes(x = beers.review_overall, y = .fitted)) +
+  geom_point(aes(color = .resid), alpha = 0.4) +
+  scale_color_gradientn(colors = c("#F26744", "#ADE330", "#58ED98", "#95ADF5", "#F595CF")) +
+  theme_bw()
+```
+
+```{r}
+ggplot(data = loess_preds, aes(x = .fitted, y = .resid)) +
+  geom_point(aes(color = beers.review_overall), alpha = 0.4) +
+  scale_color_gradientn(colors = c("#F26744", "#ADE330", "#58ED98", "#95ADF5", "#F595CF")) +
+  theme_bw()
+```
